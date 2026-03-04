@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camp Management - Sprint 1</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f9; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input, select, button { margin: 5px 0; padding: 8px; width: 100%; max-width: 300px; display: block; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <h1>🏕️ Camp Management - Sprint 1</h1>
+        
+        <div class="card">
+            <h2>1. Create Account (Parent/Admin)</h2>
+            <input v-model="newUser.name" placeholder="Name">
+            <select v-model="newUser.role">
+                <option value="Parent">Parent</option>
+                <option value="Admin">Admin</option>
+            </select>
+            <button @click="createUser">Register User</button>
+        </div>
+
+        <div class="card">
+            <h2>2. Create Group (Admin)</h2>
+            <input v-model="newGroup.name" placeholder="Group Name (e.g., Eagles)">
+            <button @click="createGroup">Create Group</button>
+        </div>
+
+        <div class="card">
+            <h2>3. Enroll Camper (Parent/Admin)</h2>
+            <input v-model="newCamper.name" placeholder="Camper Name">
+            <input v-model="newCamper.parent_id" placeholder="Parent ID (Number)" type="number">
+            <button @click="createCamper">Enroll Camper</button>
+        </div>
+
+        <div class="card">
+            <h2>Current Campers in System</h2>
+            <button @click="fetchCampers">Refresh List</button>
+            <ul>
+                <li v-for="camper in campers" :key="camper.id">
+                    Camper #{{ camper.id }}: {{ camper.name }} (Parent ID: {{ camper.parent_id }})
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        const API_URL = "http://localhost:8000";
+
+        createApp({
+            data() {
+                return {
+                    newUser: { name: '', role: 'Parent' },
+                    newGroup: { name: '' },
+                    newCamper: { name: '', parent_id: null },
+                    campers: []
+                }
+            },
+            methods: {
+                async createUser() {
+                    await fetch(`${API_URL}/users/`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.newUser)
+                    });
+                    alert("User Created!");
+                    this.newUser.name = '';
+                },
+                async createGroup() {
+                    await fetch(`${API_URL}/groups/`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.newGroup)
+                    });
+                    alert("Group Created!");
+                    this.newGroup.name = '';
+                },
+                async createCamper() {
+                    await fetch(`${API_URL}/campers/`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(this.newCamper)
+                    });
+                    alert("Camper Enrolled!");
+                    this.newCamper.name = '';
+                    this.fetchCampers();
+                },
+                async fetchCampers() {
+                    const response = await fetch(`${API_URL}/campers/`);
+                    this.campers = await response.json();
+                }
+            },
+            mounted() {
+                this.fetchCampers();
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>

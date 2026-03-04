@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # 1. BASE DE DATOS
+  # 1. DATABASE (PostgreSQL)
   db:
     image: postgres:15-alpine
     environment:
@@ -10,6 +10,12 @@ services:
       POSTGRES_DB: database
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      # pg_isready is a built-in tool that checks if the DB is accepting connections
+      test: ["CMD-SHELL", "pg_isready -U user -d database"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # 2. BACKEND API (FastAPI)
   backend:
@@ -18,7 +24,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://user:password@db:5432/database
     depends_on:
-      - db
+      db:
+        condition: service_healthy # This ensures the backend waits for the DB to be READY, not just started
     ports:
       - "8000:8000"
 

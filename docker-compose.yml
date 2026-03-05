@@ -11,7 +11,6 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      # pg_isready is a built-in tool that checks if the DB is accepting connections
       test: ["CMD-SHELL", "pg_isready -U user -d database"]
       interval: 5s
       timeout: 5s
